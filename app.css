@@ -1,0 +1,292 @@
+html, body {
+    padding: 0;
+    margin: 0;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    width: 1210px;
+    margin: 0px auto;
+}
+
+h1 {
+    text-align: center;
+}
+
+#freq-groups {
+    margin: 30px 0 0 0;
+    padding: 0;
+}
+
+#freq-groups li {
+    list-style: none;
+    display: inline-block;
+    padding: 10px;
+    margin-bottom: 10px;
+    border: 1px solid #ddd;
+    cursor: pointer;
+    border-radius: 7px;
+}
+
+#freq-groups li:hover {
+    background: #ededed;
+}
+
+#freq-groups li.active {
+    background: #e0e0e0;
+}
+
+#freq-groups li.active:hover {
+    background: #d5d5d5;
+}
+
+#freq-wrap {
+    margin: 10px;
+    height: 855px; /* 4*14*15 + 15 */
+    width: 1250px; /* 4*14*20 + 80 */
+    display: flex;
+    flex-direction: row;
+}
+
+#freq-labels {
+    display: flex;
+    flex-direction: column;
+    width: 80px; /*4*20px*/
+    margin-top: 7px;
+    height: 840px;
+    gap: 46px;
+}
+
+#freq-labels .label {
+    height: 16px;
+    width: 70px;
+    text-align: right;
+    padding-right: 5px;
+    font-size: 12px;
+    color: #333;
+}
+
+#freq-bands-wrap {
+    display: flex;
+    flex-direction: column;
+}
+
+#freq-bands-labels {
+    display: flex;
+    flex-direction: row;
+    height: 15px;
+}
+
+#freq-bands-labels .label {
+    height: 15px;
+    width: 80px;
+    text-align: center;
+    font-size: 11px;
+    color: #333;
+}
+
+#freqs {
+    position: relative;
+    border: 1px solid #cdcdcd;
+    height: 840px; /* 4*14*15*/
+    width: 1120px; /* 4*14*20*/
+
+    background:
+        repeating-linear-gradient(0deg, transparent 0px 59px, #cdcdcd 59px 60px),
+        repeating-linear-gradient(90deg, transparent 0px 79px, #cdcdcd 79px 80px),
+        repeating-linear-gradient(0deg, transparent 0px 14px, #efefef 14px 15px),
+        repeating-linear-gradient(90deg, transparent 0px 19px, #efefef 19px 20px);
+}
+
+#freqs .channel-1 { background-color: #DCE7FF; color: black; }
+#freqs .channel-2 { background-color: #E6F5FF; color: black; }
+#freqs .channel-3 { background-color: #E9FCFF; color: black; }
+#freqs .channel-4 { background-color: #EBFFEC; color: black; }
+#freqs .channel-5 { background-color: #FFFCE6; color: black; }
+#freqs .channel-6 { background-color: #FFEDE6; color: black; }
+#freqs .channel-7 { background-color: #FFEAEA; color: black; }
+#freqs .channel-8 { background-color: #FFE5E5; color: black; }
+
+#freqs .channel {
+    position: absolute;
+    width: 40px;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    text-align: center;
+    border-radius: 7px;
+    z-index: 200;
+    border: 1px solid black;
+    cursor: pointer;
+}
+
+#freqs .channel.selected {
+    border: 1px solid red;
+    box-shadow: #333333 2px 2px 7px;
+    width: 50px;
+    margin-left: -5px;
+    margin-top: -1px;
+    font-size: 14px;
+    z-index: 1000 !important;
+}
+
+#freqs .channel.crossing-1,
+#freqs .channel.crossing-2,
+#freqs .channel.crossing-imd {
+    background-image:
+        linear-gradient(45deg, red 30%, transparent 30%, transparent 70%, red 70%, red),
+        linear-gradient(45deg, red 30%, transparent 30%, transparent 70%, red 70%, red);
+}
+
+#freqs .channel:hover {
+    width: 80px;
+    margin-left: -20px;
+    font-size: 14px;
+    z-index: 1000 !important;
+    box-shadow: #bbb 1px 1px 7px;
+}
+
+#harmonics-wrap {
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 840px; /* 4*14*15*/
+    width: 1120px; /* 4*14*20*/
+    overflow: hidden;
+}
+
+#harmonics-wrap .harmonic {
+    position: absolute;
+    z-index: 100;
+    width: 100%;
+    left: 0;
+    opacity: 0.25;
+    transition: top 1s ease, height 1s ease, opacity 1s ease;
+}
+
+#harmonics-wrap.invalid-1 .harmonic-freq-1 {
+    display: none;
+    top: 9999px !important;
+}
+
+#harmonics-wrap.invalid-2 .harmonic-freq-2 {
+    display: none;
+    top: 9999px !important;
+}
+
+#harmonics-wrap .harmonic:hover {
+    opacity: 0.38;
+}
+
+#harmonics-wrap .harmonic.harmonic-freq-1 {
+    background: #FF3300;
+}
+
+#harmonics-wrap .harmonic.harmonic-freq-2 {
+    background: #33FF00;
+}
+
+#harmonics-wrap .imd {
+    position: absolute;
+    z-index: 100;
+    width: 100%;
+    left: 0;
+    opacity: 0.4;
+    transition: top 1s ease, height 1s ease, opacity 1s ease;
+    background: #FFFF00;
+}
+
+#freq-select-wrap {
+    height: 90px;
+    display: flex;
+    flex-direction: row;
+    margin-left: 10px;
+}
+
+.freq-select {
+    margin: 20px auto;
+    width: 300px;
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+}
+
+#freq1-select input {
+    background: #FFD9CC;
+}
+
+#freq1-select input:focus {
+    background: #FFECE6;
+}
+
+#freq2-select input:focus {
+    background: #E6FFE6;
+}
+
+#freq2-select input {
+    background: #D9FFD9;
+}
+
+.freq-select input {
+    font-size: 40px;
+    padding: 20px;
+    width: 120px;
+    height: 20px;
+    text-align: center;
+    /*-moz-appearance:textfield;*/
+    border: #777 solid 1px;
+    border-radius: 10px;
+}
+
+.freq-select input:focus {
+    outline: none !important;
+    border: 1px solid #444;
+    box-shadow: #aaa 1px 1px 5px;
+}
+
+.freq-select input::-webkit-inner-spin-button,
+.freq-select  input::-webkit-outer-spin-button {
+    /*appearance: none;*/
+    margin: 0;
+}
+
+.freq-select input:hover::-webkit-inner-spin-button,
+.freq-select  input:hover::-webkit-outer-spin-button {
+    opacity: 0.7;
+}
+
+.freq-select input:invalid {
+    border: 2px solid red;
+}
+
+.freq-select-arrow {
+    display: inline-block;
+    background: none;
+    border: none;
+    width: 40px;
+    height: 20px;
+    margin: 15px 0;
+    white-space: nowrap;
+    line-height: 20px;
+    background: #efefef;
+    border-radius: 4px;
+    font-size: 10px;
+    padding: 5px;
+    text-decoration: none;
+    color: #333333;
+}
+
+.freq-select-arrow:hover {
+    background: #dddddd;
+}
+
+.freq-select-arrow:active {
+    background: #cccccc;
+}
+
+#copy {
+    text-align: center;
+    font-size: 12px;
+    color: #888;
+    padding: 10px;
+}
