@@ -1,15 +1,49 @@
 <!DOCTYPE html>
-<html lang="uk">
-<head>
-    <meta charset="UTF-8">
-    <title>Мій сайт на GitHub</title>
-    <style>
-        body { font-family: sans-serif; text-align: center; padding: 50px; }
-        h1 { color: #2ea44f; }
-    </style>
-</head>
-<body>
-    <h1>Привіт! Це мій перший статичний сайт.</h1>
-    <p>Розміщено за допомогою GitHub Pages.</p>
+<html lang="en">
+    <head>
+        <title>Калькулятор гармонік для сітки відеоканалів MILELRS</title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="css/app.css?3">
+    </head>
+    <body>
+        <h1>Калькулятор гармонік для сітки відеоканалів MILELRS</h1>
+        <div id="freq-select-wrap">
+            <div id="freq1-select" class="freq-select">
+                <a class="freq-select-arrow" href="#" data-for="freq1min" data-dir="down">▼</a>
+                <input type="number" id="freq1min" min="0" max="2800" value="740" required>
+                <a class="freq-select-arrow" href="#" data-for="freq1min" data-dir="up">▲</a>
+                <a class="freq-select-arrow" href="#" data-for="freq1max" data-dir="down">▼</a>
+                <input type="number" id="freq1max" min="0" max="2800" value="760" required>
+                <a class="freq-select-arrow" href="#" data-for="freq1max" data-dir="up">▲</a>
+            </div>
+            <div id="freq2-select" class="freq-select">
+                <a class="freq-select-arrow" href="#" data-for="freq2min" data-dir="down">▼</a>
+                <input type="number" id="freq2min" min="0" max="2800" value="2400" required>
+                <a class="freq-select-arrow" href="#" data-for="freq2min" data-dir="up">▲</a>
+                <a class="freq-select-arrow" href="#" data-for="freq2max" data-dir="down">▼</a>
+                <input type="number" id="freq2max" min="0" max="2800" value="2479" required>
+                <a class="freq-select-arrow" href="#" data-for="freq2max" data-dir="up">▲</a>
+            </div>
+        </div>
+        <div id="freq-wrap">
+            <ul id="freq-groups">
+                <li data-group="1G3">1G3</li>
+                <li data-group="3G3">3G3</li>
+                <li data-group="R35">R35</li>
+                <li class="active" data-group="5G8">5G8</li>
+                <li data-group="R67">R67</li>
+                <li data-group="DIGITAL">DIGI</li>
+            </ul>
+            <div id="freq-labels"></div>
+            <div id="freq-bands-wrap">
+                <div id="freq-bands-labels"></div>
+                <div id="freqs">
+                    <div id="harmonics-wrap"></div>
+                </div>
+            </div>
+        </div>
+        <div id="copy">З питаннями і пропозиціями звертайтесь в Signal: @mayhem.26</div>
 </body>
+    <script type="text/javascript" src="js/app.js?4"></script>
 </html>
