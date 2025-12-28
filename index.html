@@ -1,49 +1,42 @@
 <!DOCTYPE html>
-<html lang="en">
-    <head>
-        <title>Калькулятор гармонік для сітки відеоканалів MILELRS</title>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <link rel="stylesheet" href="css/app.css">
-    </head>
-    <body>
-        <h1>Калькулятор гармонік для сітки відеоканалів MILELRS</h1>
-        <div id="freq-select-wrap">
-            <div id="freq1-select" class="freq-select">
-                <a class="freq-select-arrow" href="#" data-for="freq1min" data-dir="down">▼</a>
-                <input type="number" id="freq1min" min="0" max="2800" value="740" required>
-                <a class="freq-select-arrow" href="#" data-for="freq1min" data-dir="up">▲</a>
-                <a class="freq-select-arrow" href="#" data-for="freq1max" data-dir="down">▼</a>
-                <input type="number" id="freq1max" min="0" max="2800" value="760" required>
-                <a class="freq-select-arrow" href="#" data-for="freq1max" data-dir="up">▲</a>
-            </div>
-            <div id="freq2-select" class="freq-select">
-                <a class="freq-select-arrow" href="#" data-for="freq2min" data-dir="down">▼</a>
-                <input type="number" id="freq2min" min="0" max="2800" value="2400" required>
-                <a class="freq-select-arrow" href="#" data-for="freq2min" data-dir="up">▲</a>
-                <a class="freq-select-arrow" href="#" data-for="freq2max" data-dir="down">▼</a>
-                <input type="number" id="freq2max" min="0" max="2800" value="2479" required>
-                <a class="freq-select-arrow" href="#" data-for="freq2max" data-dir="up">▲</a>
-            </div>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZVIAZKIVETS Antenna Tuner</title>
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-dragdata@2.2.3/dist/chartjs-plugin-dragdata.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@1.2.1/dist/chartjs-plugin-zoom.min.js"></script>
+
+    <link rel="stylesheet" href="css/swr_constructor.css">
+</head>
+<body>
+
+    <h2>ZVIAZKIVETS SWR Constructor</h2>
+    <div class="info">
+        Колесо мишки: <b>Зум</b> | Ліва кнопка + рух: <b>Переміщення</b> | Тягнути точку: <b>Зміна КСХ</b>
+    </div>
+
+    <div class="chart-container">
+        <canvas id="swrChart"></canvas>
+    </div>
+
+    <div class="controls">
+        
+        <div class="output-group">
+            <label for="outputRaw">КСХ формату ZVIAZKIVETS:</label>
+            <textarea id="outputRaw" placeholder="Вставте або пишіть сюди (1.00,1.20,...)"></textarea>
         </div>
-        <div id="freq-wrap">
-            <ul id="freq-groups">
-                <li data-group="1G3">1G3</li>
-                <li data-group="3G3">3G3</li>
-                <li data-group="R35">R35</li>
-                <li class="active" data-group="5G8">5G8</li>
-                <li data-group="R67">R67</li>
-                <li data-group="DIGITAL">DIGI</li>
-            </ul>
-            <div id="freq-labels"></div>
-            <div id="freq-bands-wrap">
-                <div id="freq-bands-labels"></div>
-                <div id="freqs">
-                    <div id="harmonics-wrap"></div>
-                </div>
-            </div>
+        
+        <div class="btn-group">
+            <select id="presetSelector" onchange="loadPreset(this)" style="padding: 12px; border-radius: 4px; border: none; background: #333; color: white;">
+                <option value="">📂 Обрати пресет...</option>
+            </select>
         </div>
-        <div id="copy">З питаннями і пропозиціями звертайтесь в Signal: @kolibri_uav_lab.33</div>
+    </div>
+
+    <script src="js/swr_constructor.js"></script>
 </body>
-    <script type="text/javascript" src="js/app.js"></script>
 </html>
