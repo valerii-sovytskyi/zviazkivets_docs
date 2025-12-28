@@ -98,5 +98,6 @@
 З будь якими питаннями звертайтесь до **kolibri_uav_lab.33** (signal)
 
 Корисні посилання:
-[Zvizkivets Antenna Tuner](https://valerii-sovytskyi.github.io/zviazkivets_docs/#)
-[Підтримка автора](https://send.monobank.ua/jar/4UnA1nv5Cp)
+
+- [Zviazkivets Antenna Tuner](https://valerii-sovytskyi.github.io/zviazkivets_docs/#)
+- [Підтримка автора](https://send.monobank.ua/jar/4UnA1nv5Cp)
