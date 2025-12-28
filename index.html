@@ -35,6 +35,13 @@
                 <option value="">📂 Обрати пресет...</option>
             </select>
         </div>
+        
+        <div class="output-group" style="border: 1px dashed #555; padding: 10px; border-radius: 4px;">
+            <label for="s1pFile" style="color: #00d2ff;">📡 Імпорт файлу NanoVNA (.s1p):</label>
+            <input type="file" id="s1pFile" accept=".s1p" onchange="handleNanoVNAUpload(this)" style="margin-top: 5px; color: white;">
+        </div>
+
+        </div>
     </div>
 
     <script src="js/swr_constructor.js"></script>

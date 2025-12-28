@@ -232,9 +232,8 @@ function updateGraphFromCSV(silentMode = false) {
 // --- ПРЕСЕТИ ---
 // Список файлів, які лежать у папці presets/5g8/
 const presetsList = [
-    { name: "Rush Cherry 2 (Long)", file: "rush_cherry_2.txt" },
-    { name: "Foxeer Lollipop 4",    file: "foxeer_lollipop_4.txt" },
-    { name: "TrueRC Singularity",   file: "truerc_singularity.txt" }
+    { name: "RushFPV Cherry 5.8G Antenna RHCP SMA 160mm", file: "RushFPV Cherry 5.8G Antenna RHCP SMA 160mm.txt" },
+    { name: "TrueRC CORE 5.8 GHz (RHCP)",   file: "TrueRC CORE 5.8 GHz (RHCP).txt" }
     // Додавай сюди нові файли за аналогією
 ];
 
@@ -286,6 +285,141 @@ async function loadPreset(selectObject) {
 
     // Скидаємо вибір на дефолтний, щоб можна було обрати той самий пресет ще раз, якщо треба
     selectObject.value = "";
+}
+
+// --- NANOVNA LOGIC ---
+
+function handleNanoVNAUpload(input) {
+    const file = input.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    
+    reader.onload = function(e) {
+        const content = e.target.result;
+        try {
+            const vnaData = parseTouchstone(content);
+            mapVnaToOurFreqs(vnaData);
+            
+            // Очищаємо інпут, щоб можна було завантажити той самий файл ще раз
+            input.value = ''; 
+        } catch (err) {
+            alert("Помилка парсингу файлу:\n" + err.message);
+        }
+    };
+
+    reader.readAsText(file);
+}
+
+// Парсер формату .s1p
+function parseTouchstone(text) {
+    const lines = text.split('\n');
+    let dataPoints = [];
+    let freqMultiplier = 1; // За дефолтом Hz
+
+    for (let line of lines) {
+        line = line.trim();
+        if (!line || line.startsWith('!')) continue; // Пропуск коментарів
+
+        // Читаємо заголовок (наприклад: # Hz S RI R 50)
+        if (line.startsWith('#')) {
+            const parts = line.toUpperCase().split(/\s+/);
+            if (parts.includes('KHZ')) freqMultiplier = 1e-3;
+            else if (parts.includes('MHZ')) freqMultiplier = 1;
+            else if (parts.includes('GHZ')) freqMultiplier = 1e3;
+            else freqMultiplier = 1e-6; // Якщо Hz, то переводимо в MHz
+            continue;
+        }
+
+        // Парсинг даних
+        // Формат зазвичай: Freq Re Im ...
+        const parts = line.split(/\s+/);
+        if (parts.length < 3) continue;
+
+        let freq = parseFloat(parts[0]) * freqMultiplier; // Переводимо в MHz
+        
+        // NanoVNA зазвичай дає Real та Imaginary частини
+        let re = parseFloat(parts[1]);
+        let im = parseFloat(parts[2]);
+
+        // Розрахунок КСХ (VSWR)
+        // 1. Коефіцієнт відбиття (Gamma)
+        let gamma = Math.sqrt(re * re + im * im);
+        
+        // 2. SWR formula: (1 + Gamma) / (1 - Gamma)
+        // Захист, якщо gamma > 1 (активна антена або помилка калібровки)
+        if (gamma >= 0.99) gamma = 0.99;
+        
+        let swr = (1 + gamma) / (1 - gamma);
+
+        dataPoints.push({ freq: freq, swr: swr });
+    }
+    
+    if (dataPoints.length === 0) throw new Error("Файл не містить даних або формат не підтримується");
+    return dataPoints;
+}
+
+// Функція мапінгу (Інтерполяція)
+function mapVnaToOurFreqs(vnaData) {
+    // Сортуємо дані VNA по частоті (про всяк випадок)
+    vnaData.sort((a, b) => a.freq - b.freq);
+
+    let newFreqMap = new Map();
+    let matchCount = 0;
+
+    // Проходимо по наших точках з Config
+    let ourFreqs = Array.from(uniqueFreqs).sort((a, b) => a - b);
+
+    ourFreqs.forEach(targetFreq => {
+        // Знаходимо найближчі точки в файлі VNA
+        // targetFreq у нас в MHz (наприклад 5800)
+        
+        // 1. Перевірка меж
+        if (targetFreq < vnaData[0].freq || targetFreq > vnaData[vnaData.length - 1].freq) {
+            // Якщо частота виходить за межі сканування VNA, залишаємо як є (або ставимо 1.0)
+            return; 
+        }
+
+        // 2. Бінарний або лінійний пошук сусідів
+        let lower = vnaData[0];
+        let upper = vnaData[vnaData.length - 1];
+
+        for (let i = 0; i < vnaData.length - 1; i++) {
+            if (targetFreq >= vnaData[i].freq && targetFreq <= vnaData[i+1].freq) {
+                lower = vnaData[i];
+                upper = vnaData[i+1];
+                break;
+            }
+        }
+
+        // 3. Лінійна інтерполяція
+        // SWR = SWR1 + (SWR2 - SWR1) * ( (F - F1) / (F2 - F1) )
+        let ratio = (targetFreq - lower.freq) / (upper.freq - lower.freq);
+        let interpolatedSwr = lower.swr + (upper.swr - lower.swr) * ratio;
+
+        // Обмеження 1.0 - 3.0 (або більше, якщо хочеш бачити жах)
+        if (interpolatedSwr < 1) interpolatedSwr = 1;
+        // if (interpolatedSwr > 3) interpolatedSwr = 3; // Можна не обмежувати, графік сам обріже візуально
+
+        newFreqMap.set(targetFreq, interpolatedSwr);
+        matchCount++;
+    });
+
+    if (matchCount === 0) {
+        alert("УВАГА: Частоти у файлі не перетинаються з нашою сіткою 5.8GHz.\nПеревірте, чи ви сканували правильний діапазон (4800-6200 MHz).");
+        return;
+    }
+
+    // 4. Оновлюємо графік
+    swrChart.data.datasets[0].data.forEach(point => {
+        if (newFreqMap.has(point.x)) {
+            point.y = newFreqMap.get(point.x);
+        }
+    });
+
+    swrChart.update();
+    generateData(); // Оновлюємо текстові поля
+    alert(`Успішно імпортовано! Оновлено точок: ${matchCount}`);
 }
 
 // --- ДОДАВАННЯ СЛУХАЧА ПОДІЙ ---
