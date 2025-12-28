@@ -72,7 +72,45 @@ const swrChart = new Chart(ctx, {
         plugins: {
             legend: { display: false },
             tooltip: {
-                callbacks: { label: function(context) { return `SWR: ${context.parsed.y.toFixed(2)}`; } }
+                backgroundColor: 'rgba(0, 0, 0, 0.8)', // (Опціонально) Робимо фон темнішим
+                titleFont: { size: 16 },
+                bodyFont: { size: 16 },
+                padding: 15,
+                displayColors: false, // Прибираємо кольоровий квадратик зліва
+                callbacks: {
+                    // Ми прибираємо стандартний заголовок (частоту), бо виведемо її гарно знизу
+                    title: function() { return ''; }, 
+
+                    label: function(context) {
+                        let freq = context.parsed.x;
+                        let swr = context.parsed.y.toFixed(2);
+                        
+                        // --- ЛОГІКА ПОШУКУ КАНАЛУ ---
+                        let channelMatches = [];
+                        const bands = config["5G8"].freqs;
+                        
+                        // Проходимось по всіх бендах і шукаємо цю частоту
+                        for (let bandKey in bands) {
+                            // Перетворюємо freq на рядок, бо в конфігу вони рядки
+                            let index = bands[bandKey].indexOf(String(freq));
+                            
+                            if (index !== -1) {
+                                // index 0 -> канал 1
+                                channelMatches.push(`${bandKey}${index + 1}`);
+                            }
+                        }
+                        
+                        let channelsStr = channelMatches.length > 0 ? channelMatches.join(", ") : "Custom";
+
+                        // --- ФОРМУВАННЯ ВИВОДУ ---
+                        // Повертаємо масив рядків (кожен рядок - це новий рядок у тултіпі)
+                        return [
+                            `КСХ: ${swr}`,
+                            `Частота: ${freq} MHz`,
+                            `Канал: ${channelsStr}`
+                        ];
+                    }
+                }
             },
             dragData: {
                 round: 2,
@@ -189,7 +227,6 @@ function updateGraphFromCSV(silentMode = false) {
         }
     });
     swrChart.update();
-    if (!silentMode) alert("Графік оновлено!");
 }
 
 // --- ПРЕСЕТИ ---
