@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZVIAZKIVETS Antenna Tuner</title>
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-dragdata@2.2.3/dist/chartjs-plugin-dragdata.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@1.2.1/dist/chartjs-plugin-zoom.min.js"></script>
+
+    <link rel="stylesheet" href="css/swr_constructor.css">
+</head>
+<body>
+
+    <h2>ZVIAZKIVETS SWR Constructor</h2>
+    <div class="info">
+        Колесо мишки: <b>Зум</b> | Ліва кнопка + рух: <b>Переміщення</b> | Тягнути точку: <b>Зміна КСХ</b>
+    </div>
+
+    <div class="chart-container">
+        <canvas id="swrChart"></canvas>
+    </div>
+
+    <div class="controls">
+        
+        <div class="output-group">
+            <label for="outputRaw">КСХ формату ZVIAZKIVETS:</label>
+            <textarea id="outputRaw" placeholder="Вставте або пишіть сюди (1.00,1.20,...)"></textarea>
+        </div>
+        
+        <div class="btn-group">
+            <select id="presetSelector" onchange="loadPreset(this)" style="padding: 12px; border-radius: 4px; border: none; background: #333; color: white;">
+                <option value="">📂 Обрати пресет...</option>
+            </select>
+        </div>
+        
+        <div class="output-group" style="border: 1px dashed #555; padding: 10px; border-radius: 4px;">
+            <label for="s1pFile" style="color: #00d2ff;">📡 Імпорт файлу NanoVNA (.s1p):</label>
+            <input type="file" id="s1pFile" accept=".s1p" onchange="handleNanoVNAUpload(this)" style="margin-top: 5px; color: white;">
+        </div>
+
+        </div>
+    </div>
+
+    <script src="js/swr_constructor.js"></script>
+</body>
+</html>
