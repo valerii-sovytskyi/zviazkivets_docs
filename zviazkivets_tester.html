@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZVIAZKIVETS | Live Scanner 5G8</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --bg-color: #121212;
+            --panel-bg: #1e1e1e;
+            --text-main: #e0e0e0;
+            --accent: #00ff88;
+            --accent-hover: #00cc6a;
+            --danger: #ff4444;
+            --border: #333;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .header {
+            width: 100%;
+            max-width: 1200px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border);
+        }
+        h1 { margin: 0; font-size: 24px; letter-spacing: 1px; color: var(--accent); }
+        .controls { display: flex; gap: 15px; align-items: center; }
+        button {
+            background-color: var(--accent);
+            color: #000;
+            border: none;
+            padding: 8px 16px;
+            font-size: 14px;
+            font-weight: bold;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        button:hover { background-color: var(--accent-hover); }
+        button:disabled { background-color: #555; cursor: not-allowed; color: #888; }
+        #disconnectBtn { background-color: var(--danger); color: white; }
+        #disconnectBtn:hover { background-color: #cc0000; }
+        
+        .status { font-size: 14px; font-family: monospace; color: #888; }
+        .status.connected { color: var(--accent); }
+
+        .chart-container {
+            width: 100%;
+            max-width: 1200px;
+            background-color: var(--panel-bg);
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            height: 500px;
+            position: relative;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>ZVIAZKIVETS // 5G8 Spectrum</h1>
+        <div class="controls">
+            <span id="connectionStatus" class="status">DISCONNECTED</span>
+            <select id="baudRate" style="background: var(--panel-bg); color: var(--text-main); border: 1px solid var(--border); padding: 7px; border-radius: 4px;">
+                <option value="115200">115200</option>
+                <option value="400000">400000</option>
+            </select>
+            <button id="connectBtn">Connect</button>
+            <button id="disconnectBtn" disabled>Disconnect</button>
+        </div>
+    </div>
+
+    <div class="chart-container">
+        <canvas id="scannerChart"></canvas>
+    </div>
+
+    <script>
+        const config = {
+            "5G8": {
+                freqs: {
+                    A: ['5865', '5845', '5825', '5805', '5785', '5765', '5745', '5725'],
+                    B: ['5733', '5752', '5771', '5790', '5809', '5828', '5847', '5866'],
+                    E: ['5705', '5685', '5665', '5645', '5885', '5905', '5925', '5945'],
+                    F: ['5740', '5760', '5780', '5800', '5820', '5840', '5860', '5880'],
+                    R: ['5658', '5695', '5732', '5769', '5806', '5843', '5880', '5917'],
+                    L: ['5362', '5399', '5436', '5473', '5510', '5547', '5584', '5621'],
+                    X: ['4990', '5020', '5050', '5080', '5110', '5140', '5170', '5200'],
+                    Y: ['4870', '4900', '4930', '4960', '5226', '5252', '5278', '5304'],
+                    H: ['5653', '5693', '5733', '5773', '5813', '5853', '5893', '5933'],
+                    M: ['5333', '5373', '5413', '5453', '5493', '5533', '5573', '5613'],
+                    U: ['5325', '5348', '5366', '5384', '5402', '5420', '5438', '5456'],
+                    O: ['5474', '5492', '5510', '5528', '5546', '5564', '5582', '5600'],
+                    S: ['6002', '6028', '6054', '6080', '6106', '6132', '6158', '6184'],
+                    T: ['5931', '5960', '5990', '6015', '6041', '6067', '6093', '6119'],
+                }
+            }
+        };
+
+        const labels = [];
+        const rssiData = [];
+        const baseColors = [];
+        const freqToIndices = {};
+
+        // 1. Збираємо всі канали в один тимчасовий масив
+        const allChannels = [];
+        const bandsOrder = ['A', 'B', 'E', 'F', 'R', 'L', 'X', 'Y', 'H', 'M', 'U', 'O', 'S', 'T'];
+        
+        bandsOrder.forEach(band => {
+            config["5G8"].freqs[band].forEach((freqStr, idx) => {
+                allChannels.push({
+                    freqInt: parseInt(freqStr, 10), // Число для сортування
+                    freqStr: freqStr,               // Рядок для пошуку
+                    label: `${freqStr} (${band}${idx + 1})` // Форматуємо підпис (Частота на першому місці)
+                });
+            });
+        });
+
+        // 2. Сортуємо масив за частотою (від найменшої до найбільшої)
+        allChannels.sort((a, b) => a.freqInt - b.freqInt);
+
+        // 3. Заповнюємо дані для графіка вже з відсортованого масиву
+        allChannels.forEach((ch, globalIndex) => {
+            labels.push(ch.label);
+            rssiData.push(0); 
+            baseColors.push('rgba(0, 255, 136, 0.4)'); 
+            
+            if (!freqToIndices[ch.freqStr]) {
+                freqToIndices[ch.freqStr] = [];
+            }
+            freqToIndices[ch.freqStr].push(globalIndex);
+        });
+
+        // Ініціалізація Chart.js
+        const ctx = document.getElementById('scannerChart').getContext('2d');
+        const scannerChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'RSSI Live',
+                    data: rssiData,
+                    backgroundColor: [...baseColors],
+                    borderColor: 'rgba(0, 255, 136, 1)',
+                    borderWidth: 1,
+                    barPercentage: 1.0,
+                    categoryPercentage: 0.9
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                animation: false, 
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 1800,
+                        grid: { color: '#333' },
+                        ticks: { color: '#888' }
+                    },
+                    x: {
+                        grid: { display: false },
+                        ticks: {
+                            color: '#888',
+                            maxRotation: 90,
+                            minRotation: 90,
+                            font: { size: 10 }
+                        }
+                    }
+                },
+                plugins: {
+                    legend: { display: false }
+                }
+            }
+        });
+
+        let port;
+        let reader;
+        let keepReading = true;
+
+        const connectBtn = document.getElementById('connectBtn');
+        const disconnectBtn = document.getElementById('disconnectBtn');
+        const statusText = document.getElementById('connectionStatus');
+        const baudRateSelect = document.getElementById('baudRate');
+
+        let bestChannelIndices = [];
+        let needsChartUpdate = false;
+
+        async function connectSerial() {
+            try {
+                port = await navigator.serial.requestPort();
+                const baudRate = parseInt(baudRateSelect.value);
+                await port.open({ baudRate: baudRate });
+
+                statusText.textContent = "CONNECTED";
+                statusText.className = "status connected";
+                connectBtn.disabled = true;
+                disconnectBtn.disabled = false;
+                baudRateSelect.disabled = true;
+
+                keepReading = true;
+                readLoop();
+                
+            } catch (err) {
+                if (err.name === 'NotFoundError') {
+                    console.log("Підключення скасовано користувачем.");
+                    statusText.textContent = "CANCELED BY USER";
+                } else {
+                    console.error("Помилка підключення:", err);
+                    statusText.textContent = "ERROR: " + err.message;
+                }
+            }
+        }
+
+        async function disconnectSerial() {
+            keepReading = false;
+            if (reader) {
+                await reader.cancel();
+            }
+            if (port) {
+                await port.close();
+            }
+            statusText.textContent = "DISCONNECTED";
+            statusText.className = "status";
+            connectBtn.disabled = false;
+            disconnectBtn.disabled = true;
+            baudRateSelect.disabled = false;
+        }
+
+        async function readLoop() {
+            const textDecoder = new TextDecoderStream();
+            const readableStreamClosed = port.readable.pipeTo(textDecoder.writable);
+            reader = textDecoder.readable.getReader();
+
+            let buffer = "";
+
+            try {
+                while (keepReading) {
+                    const { value, done } = await reader.read();
+                    if (done) break;
+                    
+                    buffer += value;
+                    const lines = buffer.split('\n');
+                    
+                    buffer = lines.pop();
+
+                    for (const line of lines) {
+                        parseLine(line.trim());
+                    }
+                }
+            } catch (error) {
+                console.error("Помилка читання:", error);
+            } finally {
+                reader.releaseLock();
+            }
+        }
+
+        function parseLine(line) {
+            // Очікуваний формат: "rssi,ch_freq,best_ch_freq"
+            if (!line) return;
+            
+            const parts = line.split(',');
+            if (parts.length === 3) {
+                const rssi = parseInt(parts[0], 10);
+                const ch_freq = parts[1].trim(); 
+                const best_ch_freq = parts[2].trim();
+
+                if (!isNaN(rssi) && freqToIndices[ch_freq]) {
+                    
+                    freqToIndices[ch_freq].forEach(index => {
+                        rssiData[index] = rssi;
+                    });
+
+                    bestChannelIndices = freqToIndices[best_ch_freq] || [];
+                    needsChartUpdate = true;
+                }
+            }
+        }
+
+        setInterval(() => {
+            if (needsChartUpdate) {
+                const colors = [...baseColors];
+                
+                bestChannelIndices.forEach(index => {
+                    colors[index] = 'rgba(255, 68, 68, 1)'; 
+                });
+
+                scannerChart.data.datasets[0].backgroundColor = colors;
+                scannerChart.update();
+                needsChartUpdate = false;
+            }
+        }, 50);
+
+        connectBtn.addEventListener('click', connectSerial);
+        disconnectBtn.addEventListener('click', disconnectSerial);
+    </script>
+</body>
+</html>
