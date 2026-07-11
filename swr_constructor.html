@@ -23,25 +23,44 @@
         <canvas id="swrChart"></canvas>
     </div>
 
-    <div class="controls">
+    <div class="controls three-cols">
         
-        <div class="output-group">
-            <label for="outputRaw">КСХ формату ZVIAZKIVETS:</label>
-            <textarea id="outputRaw" placeholder="Вставте або пишіть сюди (1.00,1.20,...)"></textarea>
-        </div>
-        
-        <div class="btn-group">
-            <select id="presetSelector" onchange="loadPreset(this)" style="padding: 12px; border-radius: 4px; border: none; background: #333; color: white;">
+        <!-- БЛОК 1: RX Антена -->
+        <div class="col-panel panel-rx">
+            <h3 style="color: #ff4444;">📡 RX Антена</h3>
+            <textarea id="rxRaw" placeholder="Масив КСХ (1.20, 1.30...)"></textarea>
+            <select id="rxPreset" onchange="loadPreset(this, 'RX')">
                 <option value="">📂 Обрати пресет...</option>
+                <option value="flat">Ідеальний КСХ (1.0)</option>
             </select>
-        </div>
-        
-        <div class="output-group" style="border: 1px dashed #555; padding: 10px; border-radius: 4px;">
-            <label for="s1pFile" style="color: #00d2ff;">📡 Імпорт файлу NanoVNA (.s1p):</label>
-            <input type="file" id="s1pFile" accept=".s1p" onchange="handleNanoVNAUpload(this)" style="margin-top: 5px; color: white;">
+            <div style="font-size: 12px; color: #888;">Імпорт .s1p:</div>
+            <input type="file" id="rxS1p" accept=".s1p" onchange="handleNanoVNAUpload(this, 'RX')">
         </div>
 
+        <!-- БЛОК 2: TX Антена -->
+        <div class="col-panel panel-tx">
+            <h3 style="color: #00d2ff;">📡 TX Антена</h3>
+            <textarea id="txRaw" placeholder="Масив КСХ (1.20, 1.30...)"></textarea>
+            <select id="txPreset" onchange="loadPreset(this, 'TX')">
+                <option value="">📂 Обрати пресет...</option>
+                <option value="flat">Ідеальний КСХ (1.0)</option>
+            </select>
+            <div style="font-size: 12px; color: #888;">Імпорт .s1p:</div>
+            <input type="file" id="txS1p" accept=".s1p" onchange="handleNanoVNAUpload(this, 'TX')">
         </div>
+
+        <!-- БЛОК 3: Результуючий КСХ -->
+        <div class="col-panel panel-combined">
+            <h3 style="color: #ffd700;">⚡ Результуючий (MAX)</h3>
+            <textarea id="combinedRaw" placeholder="Згладжений масив КСХ"></textarea>
+            <select id="combinedPreset" onchange="loadPreset(this, 'COMBINED')">
+                <option value="">📂 Обрати пресет...</option>
+                <option value="flat">Скинути на 1.0</option>
+            </select>
+            <div style="font-size: 12px; color: #888;">Імпорт .s1p (замінить результат):</div>
+            <input type="file" id="combinedS1p" accept=".s1p" onchange="handleNanoVNAUpload(this, 'COMBINED')">
+        </div>
+
     </div>
 
     <script src="js/swr_constructor.js"></script>
